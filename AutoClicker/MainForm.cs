@@ -50,12 +50,6 @@ namespace AutoClicker
                         w.Write((byte)6);
                     }
 
-                    // 固定鼠标位置
-                    w.Write((byte)2);
-
-                    // 固定延迟
-                    w.Write((byte)1);
-
                     // 写入固定延迟
                     w.Write((int)numDelayFixed.Value);
 
@@ -381,6 +375,22 @@ namespace AutoClicker
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             SaveSettings();
+        }
+
+        private void MainForm_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.Visible = false;
+                this.notifyIcon.Visible = true;
+            }
+        }
+
+        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
+        {
+            this.Visible = true;
+            this.WindowState = FormWindowState.Normal;
+            this.Show();
         }
     }
 }
