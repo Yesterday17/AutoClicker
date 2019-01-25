@@ -50,46 +50,16 @@ namespace AutoClicker
                         w.Write((byte)6);
                     }
 
-                    // Location info
-                    if (rdbLocationFixed.Checked)
-                    {
-                        w.Write((byte)1);
-                    }
-                    else if (rdbLocationMouse.Checked)
-                    {
-                        w.Write((byte)2);
-                    }
-                    else if (rdbLocationRandom.Checked)
-                    {
-                        w.Write((byte)3);
-                    }
-                    else if (rdbLocationRandomArea.Checked)
-                    {
-                        w.Write((byte)4);
-                    }
+                    // 固定鼠标位置
+                    w.Write((byte)2);
 
-                    w.Write((int)numFixedX.Value);
-                    w.Write((int)numFixedY.Value);
-                    w.Write((int)numRandomX.Value);
-                    w.Write((int)numRandomY.Value);
-                    w.Write((int)numRandomWidth.Value);
-                    w.Write((int)numRandomHeight.Value);
+                    // 固定延迟
+                    w.Write((byte)1);
 
-                    // Delay info
-                    if (rdbDelayFixed.Checked)
-                    {
-                        w.Write((byte)1);
-                    }
-                    else if (rdbDelayRange.Checked)
-                    {
-                        w.Write((byte)2);
-                    }
-
+                    // 写入固定延迟
                     w.Write((int)numDelayFixed.Value);
-                    w.Write((int)numDelayRangeMin.Value);
-                    w.Write((int)numDelayRangeMax.Value);
 
-                    // Count info
+                    // 点击方式
                     if (rdbCount.Checked)
                     {
                         w.Write((byte)1);
@@ -101,7 +71,7 @@ namespace AutoClicker
 
                     w.Write((int)numCount.Value);
 
-                    // Hotkey info
+                    // 快捷键
                     w.Write((int)hotkey);
                 }
             }
@@ -116,25 +86,14 @@ namespace AutoClicker
                     using (BinaryReader r = new BinaryReader(fs))
                     {
                         byte buttonType = r.ReadByte();
-
-                        byte locationType = r.ReadByte();
-                        int fixedX = r.ReadInt32();
-                        int fixedY = r.ReadInt32();
-                        int randomX = r.ReadInt32();
-                        int randomY = r.ReadInt32();
-                        int randomWidth = r.ReadInt32();
-                        int randomHeight = r.ReadInt32();
-
-                        byte delayType = r.ReadByte();
                         int fixedDelay = r.ReadInt32();
-                        int rangeDelayMin = r.ReadInt32();
-                        int rangeDelayMax = r.ReadInt32();
 
                         byte countType = r.ReadByte();
                         int count = r.ReadInt32();
 
                         hotkey = (Keys)r.ReadInt32();
 
+                        // 确定点击类型的显示
                         switch (buttonType)
                         {
                             case 1:
@@ -157,42 +116,7 @@ namespace AutoClicker
                                 break;
                         }
 
-                        switch (locationType)
-                        {
-                            case 1:
-                                rdbLocationFixed.Checked = true;
-                                break;
-                            case 2:
-                                rdbLocationMouse.Checked = true;
-                                break;
-                            case 3:
-                                rdbLocationRandom.Checked = true;
-                                break;
-                            case 4:
-                                rdbLocationRandomArea.Checked = true;
-                                break;
-                        }
-
-                        numFixedX.Value = fixedX;
-                        numFixedY.Value = fixedY;
-                        numRandomX.Value = randomX;
-                        numRandomY.Value = randomY;
-                        numRandomWidth.Value = randomWidth;
-                        numRandomHeight.Value = randomHeight;
-
-                        switch (delayType)
-                        {
-                            case 1:
-                                rdbDelayFixed.Checked = true;
-                                break;
-                            case 2:
-                                rdbDelayRange.Checked = true;
-                                break;
-                        }
-
                         numDelayFixed.Value = fixedDelay;
-                        numDelayRangeMin.Value = rangeDelayMin;
-                        numDelayRangeMax.Value = rangeDelayMax;
 
                         switch (countType)
                         {
@@ -258,7 +182,7 @@ namespace AutoClicker
         {
             for (int i = 0; i < Milliseconds; i += 10)
             {
-                tslStatus.Text = string.Format("Next click: {0}ms", Milliseconds - i);
+                tslStatus.Text = string.Format("下一次点击: {0}ms", Milliseconds - i);
                 Thread.Sleep(9);
             }
         }
@@ -291,100 +215,12 @@ namespace AutoClicker
 
         private void LocationHandler(object sender, EventArgs e)
         {
-            AutoClicker.LocationType locationType;
-            int x = -1;
-            int y = -1;
-            int width = -1;
-            int height = -1;
-
-            if (rdbLocationFixed.Checked)
-            {
-                locationType = AutoClicker.LocationType.Fixed;
-                x = (int)numFixedX.Value;
-                y = (int)numFixedY.Value;
-            }
-            else if (rdbLocationMouse.Checked)
-            {
-                locationType = AutoClicker.LocationType.Cursor;
-            }
-            else if (rdbLocationRandom.Checked)
-            {
-                locationType = AutoClicker.LocationType.Random;
-            }
-            else
-            {
-                locationType = AutoClicker.LocationType.RandomRange;
-                x = (int)numRandomX.Value;
-                y = (int)numRandomY.Value;
-                width = (int)numRandomWidth.Value;
-                height = (int)numRandomHeight.Value;
-            }
-
-            // Toggle visibility of controls.
-            if (locationType == AutoClicker.LocationType.Fixed)
-            {
-                numFixedX.Enabled = true;
-                numFixedY.Enabled = true;
-            }
-            else
-            {
-                numFixedX.Enabled = false;
-                numFixedY.Enabled = false;
-            }
-
-            if (locationType == AutoClicker.LocationType.RandomRange)
-            {
-                numRandomX.Enabled = true;
-                numRandomY.Enabled = true;
-                numRandomWidth.Enabled = true;
-                numRandomHeight.Enabled = true;
-                btnSelect.Enabled = true;
-            }
-            else
-            {
-                numRandomX.Enabled = false;
-                numRandomY.Enabled = false;
-                numRandomWidth.Enabled = false;
-                numRandomHeight.Enabled = false;
-                btnSelect.Enabled = false;
-            }
-
-            clicker.UpdateLocation(locationType, x, y, width, height);
+            clicker.UpdateLocation(AutoClicker.LocationType.Cursor, -1, -1, -1, -1);
         }
 
         private void DelayHandler(object sender, EventArgs e)
         {
-            AutoClicker.DelayType delayType;
-            int delay = -1;
-            int delayRange = -1;
-
-            if (rdbDelayFixed.Checked)
-            {
-                delayType = AutoClicker.DelayType.Fixed;
-                delay = (int)numDelayFixed.Value;
-            }
-            else
-            {
-                delayType = AutoClicker.DelayType.Range;
-                delay = (int)numDelayRangeMin.Value;
-                delayRange = (int)numDelayRangeMax.Value;
-            }
-
-            // Toggle visibility of controls.
-            if (delayType == AutoClicker.DelayType.Fixed)
-            {
-                numDelayFixed.Enabled = true;
-                numDelayRangeMax.Enabled = false;
-                numDelayRangeMin.Enabled = false;
-            }
-            else
-            {
-                numDelayFixed.Enabled = false;
-                numDelayRangeMax.Enabled = true;
-                numDelayRangeMin.Enabled = true;
-            }
-
-            clicker.UpdateDelay(delayType, delay, delayRange);
+            clicker.UpdateDelay(AutoClicker.DelayType.Fixed, (int)numDelayFixed.Value, -1);
         }
 
         private void CountHandler(object sender, EventArgs e)
@@ -465,31 +301,19 @@ namespace AutoClicker
 
         private void EnableControls()
         {
-            tslStatus.Text = "Not currently doing much helpful here to be honest";
+            tslStatus.Text = "随手改了改，空岛筛矿用的（（";
             SetEnabled(grpClickType, true);
-            SetEnabled(grpLocation, true);
             SetEnabled(grpDelay, true);
             SetEnabled(grpCount, true);
-            SetButtonText(btnToggle, "Start");
-            //grpClickType.Enabled = true;
-            //grpLocation.Enabled = true;
-            //grpDelay.Enabled = true;
-            //grpCount.Enabled = true;
-            //btnToggle.Text = "Start";
+            SetButtonText(btnToggle, "开始连点");
         }
 
         private void DisableControls()
         {
             SetEnabled(grpClickType, false);
-            SetEnabled(grpLocation, false);
             SetEnabled(grpDelay, false);
             SetEnabled(grpCount, false);
-            SetButtonText(btnToggle, "Stop");
-            //grpClickType.Enabled = false;
-            //grpLocation.Enabled = false;
-            //grpDelay.Enabled = false;
-            //grpCount.Enabled = false;
-            //btnToggle.Text = "Stop";
+            SetButtonText(btnToggle, "停止连点");
         }
 
         protected override void WndProc(ref Message m)
@@ -557,20 +381,6 @@ namespace AutoClicker
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             SaveSettings();
-        }
-
-        public void SendRectangle(int X, int Y, int Width, int Height)
-        {
-            numRandomX.Value = X;
-            numRandomY.Value = Y;
-            numRandomWidth.Value = Width;
-            numRandomHeight.Value = Height;
-        }
-
-        private void btnSelect_Click(object sender, EventArgs e)
-        {
-            var form = new SelectionForm(this);
-            form.Show();
         }
     }
 }
